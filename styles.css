@@ -1,0 +1,24 @@
+* {
+  box-sizing: border-box;
+}
+
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+}
+
+.gameboard {
+  border: 4px solid black;
+  height: 50vw;
+  width: 50vw;
+  display: grid;
+  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+}
+
+.box {
+  border: 1px solid black;
+}
