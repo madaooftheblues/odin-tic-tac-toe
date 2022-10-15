@@ -11,7 +11,7 @@
   margin: 0;
 }
 
-.gameboard {
+#gameboard {
   border: 4px solid black;
   height: 50vw;
   width: 50vw;
@@ -21,4 +21,7 @@
 
 .box {
   border: 1px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
