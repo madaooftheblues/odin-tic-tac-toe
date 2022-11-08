@@ -1,26 +1,80 @@
+:root {
+  --light: #37cae5;
+  --font: #123f77;
+  --accent: #0f86b6;
+  --contrast: #f5db37;
+}
+
 * {
   box-sizing: border-box;
+  color: var(--font);
+}
+
+input {
+  outline: none;
+}
+
+#modal::backdrop {
+  backdrop-filter: blur(0.5rem);
+}
+
+#modal form {
+  height: 80vh;
+  width: 50vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+#modal h1 {
+  font-style: italic;
 }
 
 .container {
   height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr 3fr 1fr;
   margin: 0;
 }
 
+.btn {
+  padding: 1rem;
+  border-radius: 20px;
+  margin: 20px;
+  background-color: var(--light);
+  color: var(--font);
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.player-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.avatar {
+  border-radius: 50%;
+  height: 40%;
+}
+
+.name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1.5rem;
+}
 #gameboard {
-  border: 4px solid black;
   height: 50vw;
   width: 50vw;
   display: grid;
   grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+  justify-self: center;
 }
 
 .box {
-  border: 1px solid black;
+  border: 1px solid var(--font);
   display: flex;
   align-items: center;
   justify-content: center;

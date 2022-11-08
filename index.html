@@ -10,6 +10,21 @@
   </head>
   <body>
     <div class="container">
+      <dialog id="modal">
+        <form method="dialog">
+          <h1>Tic Tac Toe</h1>
+          <h3>Enter Your Names</h3>
+          <label for="input-player-X">Player X</label>
+          <input id="input-player-X" type="text" />
+          <label for="input-player-O">Player O</label>
+          <input id="input-player-O" type="text" />
+          <button id="btn-begin" class="btn" value="begin">Begin!</button>
+        </form>
+      </dialog>
+      <div class="player-card">
+        <img class="avatar" src="./assets/icons/piracy-icon.svg" alt="Pirate" />
+        <span id="name-player-X" class="name"></span>
+      </div>
       <div id="gameboard">
         <div class="box"></div>
         <div class="box"></div>
@@ -20,6 +35,10 @@
         <div class="box"></div>
         <div class="box"></div>
         <div class="box"></div>
+      </div>
+      <div class="player-card">
+        <img class="avatar" src="./assets/icons/ninja-icon.svg" alt="Ninja" />
+        <span id="name-player-O" class="name"></span>
       </div>
     </div>
   </body>
