@@ -24,17 +24,30 @@ const gameBoard = (function () {
   }
 
   function checkForWin() {
-    return WINSEQ.some((seq) =>
+    let seqIndex;
+    seqIndex = WINSEQ.findIndex((seq) =>
       seq.every((index) => moves[index] === gameController.getCurrentMark())
     );
+    if (seqIndex >= 0) {
+      displayController.showResult(WINSEQ[seqIndex]);
+      return true;
+    }
+    return false;
   }
 
-  return { getMove, setMove, checkForWin };
+  function clearBoard() {
+    moves.fill("");
+  }
+
+  return { getMove, setMove, checkForWin, clearBoard };
 })();
 
 const displayController = (function () {
   //cache DOM
   const modal = document.getElementById("modal");
+  const modalResult = document.getElementById("modal-result");
+  const winner = modalResult.querySelector("#winner-announcement");
+  const replayBtn = modalResult.querySelector("#btn-replay");
   const playerXNameInput = modal.querySelector("#input-player-X");
   const playerONameInput = modal.querySelector("#input-player-O");
   const playerXName = document.getElementById("name-player-X");
@@ -46,11 +59,15 @@ const displayController = (function () {
   modal.showModal();
   //bind events
   gameboard.addEventListener("click", registerMove);
-  modal.addEventListener("close", displayNames);
+  modal.addEventListener("close", registerPlayers);
+  replayBtn.addEventListener("click", initialize);
 
-  function displayNames() {
-    playerXName.innerText = playerXNameInput.value;
-    playerOName.innerText = playerONameInput.value;
+  function registerPlayers() {
+    gameController.setPlayerOneName(playerXNameInput.value);
+    playerXName.innerText = gameController.getPlayeOneName();
+
+    gameController.setPlayerTwoName(playerONameInput.value);
+    playerOName.innerText = gameController.getPlayerTwoName();
   }
 
   function isEmpty(element) {
@@ -64,19 +81,34 @@ const displayController = (function () {
     });
   }
 
+  function showResult(sequence) {
+    sequence.forEach((index) => boxes[index].classList.add("winseq"));
+    winner.textContent = `${gameController.getCurrentPlayer().getName()} Wins!`;
+    modalResult.showModal();
+  }
+
   function registerMove(e) {
     if (e.target === gameboard) return;
     if (!isEmpty(e.target)) return;
     gameBoard.setMove(gameController.getCurrentMark(), boxes.indexOf(e.target));
     render();
-    if (gameBoard.checkForWin())
-      return console.log(
-        gameController.getCurrentPlayer().getName() + " Won! "
-      );
+    if (gameBoard.checkForWin()) return;
     gameController.nextTurn();
   }
 
-  return { render };
+  function initialize() {
+    modalResult.close();
+    modal.showModal();
+    gameController.setPlayerOneName("");
+    gameController.setPlayerTwoName("");
+    gameBoard.clearBoard();
+    boxes.forEach((box) =>
+      box.classList.contains("winseq") ? box.classList.remove("winseq") : null
+    );
+    render();
+  }
+
+  return { render, showResult };
 })();
 
 const Player = (name, mark) => {
@@ -88,13 +120,32 @@ const Player = (name, mark) => {
     return mark;
   }
 
-  return { getName, getMark };
+  function setName(string) {
+    name = string;
+  }
+  return { getName, getMark, setName };
 };
 
 const gameController = (function () {
-  const playerOne = Player("p1", "X");
-  const playerTwo = Player("p2", "O");
+  const playerOne = Player("X", "X");
+  const playerTwo = Player("O", "O");
   let currentPlayer = playerOne;
+
+  function setPlayerOneName(name) {
+    playerOne.setName(name);
+  }
+
+  function setPlayerTwoName(name) {
+    playerTwo.setName(name);
+  }
+
+  function getPlayeOneName() {
+    return playerOne.getName();
+  }
+
+  function getPlayerTwoName() {
+    return playerTwo.getName();
+  }
 
   function nextTurn() {
     currentPlayer = currentPlayer === playerOne ? playerTwo : playerOne;
@@ -108,5 +159,13 @@ const gameController = (function () {
     return currentPlayer.getMark();
   }
 
-  return { nextTurn, getCurrentPlayer, getCurrentMark };
+  return {
+    nextTurn,
+    getCurrentPlayer,
+    getCurrentMark,
+    setPlayerOneName,
+    setPlayerTwoName,
+    getPlayeOneName,
+    getPlayerTwoName,
+  };
 })();
