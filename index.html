@@ -16,11 +16,11 @@
           <h3>Enter Your Names</h3>
           <div class="field">
             <label for="input-player-X">Player X</label>
-            <input id="input-player-X" type="text" maxlength="20" />
+            <input id="input-player-X" type="text" maxlength="20" required />
           </div>
           <div class="field">
             <label for="input-player-O">Player O</label>
-            <input id="input-player-O" type="text" maxlength="20" />
+            <input id="input-player-O" type="text" maxlength="20" required />
           </div>
           <button id="btn-begin" class="btn" value="begin">Begin!</button>
         </form>
@@ -31,7 +31,12 @@
       </dialog>
       <div class="player-card">
         <span class="mark">X</span>
-        <img class="avatar" src="./assets/icons/piracy-icon.svg" alt="Pirate" />
+        <img
+          id="avatar-player-X"
+          class="avatar selected"
+          src="./assets/icons/piracy-icon.svg"
+          alt="Pirate"
+        />
         <span id="name-player-X" class="name"></span>
       </div>
       <div id="gameboard">
@@ -47,7 +52,12 @@
       </div>
       <div class="player-card">
         <span class="mark">O</span>
-        <img class="avatar" src="./assets/icons/ninja-icon.svg" alt="Ninja" />
+        <img
+          id="avatar-player-O"
+          class="avatar"
+          src="./assets/icons/ninja-icon.svg"
+          alt="Ninja"
+        />
         <span id="name-player-O" class="name"></span>
       </div>
     </div>

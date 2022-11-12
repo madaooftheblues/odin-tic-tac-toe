@@ -23,13 +23,21 @@ const gameBoard = (function () {
     console.log(moves);
   }
 
+  function getWinSeq() {
+    return WINSEQ;
+  }
+
+  function getState() {
+    return moves;
+  }
+
   function checkForWin() {
     let seqIndex;
     seqIndex = WINSEQ.findIndex((seq) =>
       seq.every((index) => moves[index] === gameController.getCurrentMark())
     );
     if (seqIndex >= 0) {
-      displayController.showResult(WINSEQ[seqIndex]);
+      displayController.showWinner(WINSEQ[seqIndex]);
       return true;
     }
     return false;
@@ -39,7 +47,7 @@ const gameBoard = (function () {
     moves.fill("");
   }
 
-  return { getMove, setMove, checkForWin, clearBoard };
+  return { getMove, setMove, checkForWin, getWinSeq, getState, clearBoard };
 })();
 
 const displayController = (function () {
@@ -52,8 +60,13 @@ const displayController = (function () {
   const playerONameInput = modal.querySelector("#input-player-O");
   const playerXName = document.getElementById("name-player-X");
   const playerOName = document.getElementById("name-player-O");
+  const playerXAvatar = document.getElementById("avatar-player-X");
+  const playerOAvatar = document.getElementById("avatar-player-O");
   const gameboard = document.getElementById("gameboard");
   const boxes = Array.from(gameboard.getElementsByClassName("box"));
+
+  //tells the current turn
+  let turn = 1;
 
   //display modal
   modal.showModal();
@@ -81,22 +94,34 @@ const displayController = (function () {
     });
   }
 
-  function showResult(sequence) {
-    sequence.forEach((index) => boxes[index].classList.add("winseq"));
+  function showWinner(sequence) {
+    sequence.forEach((seqIndex, i) =>
+      setTimeout(() => boxes[seqIndex].classList.add("winseq"), i * 500)
+    );
     winner.textContent = `${gameController.getCurrentPlayer().getName()} Wins!`;
+    setTimeout(() => modalResult.showModal(), 2000);
+  }
+
+  function showDraw() {
+    winner.textContent = "Match Tied";
     modalResult.showModal();
   }
 
   function registerMove(e) {
     if (e.target === gameboard) return;
     if (!isEmpty(e.target)) return;
+    playerOAvatar.classList.toggle("selected");
+    playerXAvatar.classList.toggle("selected");
+    turn++;
     gameBoard.setMove(gameController.getCurrentMark(), boxes.indexOf(e.target));
     render();
     if (gameBoard.checkForWin()) return;
+    if (turn > 9) return showDraw();
     gameController.nextTurn();
   }
 
   function initialize() {
+    turn = 1;
     modalResult.close();
     modal.showModal();
     gameController.setPlayerOneName("");
@@ -105,10 +130,12 @@ const displayController = (function () {
     boxes.forEach((box) =>
       box.classList.contains("winseq") ? box.classList.remove("winseq") : null
     );
+    playerXAvatar.classList.add("selected");
+    playerOAvatar.classList.remove("selected");
     render();
   }
 
-  return { render, showResult };
+  return { render, showWinner };
 })();
 
 const Player = (name, mark) => {
@@ -125,6 +152,74 @@ const Player = (name, mark) => {
   }
   return { getName, getMark, setName };
 };
+
+const computer = (function () {
+  function actions(state) {
+    const a = [];
+    state.forEach((element, index) => {
+      if (element === "") a.push(index);
+    });
+    return a;
+  }
+
+  function result(state, action, player) {
+    const newState = [...state];
+    newState[action] = player ? "X" : "O";
+    return newState;
+  }
+
+  function isWin(state, player) {
+    return gameBoard
+      .getWinSeq()
+      .some((seq) => seq.every((i) => state[i] === (player ? "X" : "O")));
+  }
+
+  function isDraw(state) {
+    return state.every((element) => element != "");
+  }
+
+  function minimax(state, player) {
+    function maxValue(state) {
+      if (isWin(state, player)) return { v: 1, move: null };
+      if (isDraw(state)) return { v: 0, move: null };
+
+      let v = -Infinity;
+      let move = null;
+      actions(state).forEach((a) => {
+        let obj = minValue(result(state, a, player));
+        if (obj.v > v) {
+          v = obj.v;
+          move = a;
+        }
+      });
+      return { v, move };
+    }
+
+    function minValue(state) {
+      if (isWin(state, !player)) return { v: -1, move: null };
+      if (isDraw(state)) return { v: 0, move: null };
+
+      let v = +Infinity;
+      let move = null;
+      actions(state).forEach((a) => {
+        let obj = maxValue(result(state, a, !player));
+        if (obj.v < v) {
+          v = obj.v;
+          move = a;
+        }
+      });
+
+      return { v, move };
+    }
+
+    let f = maxValue(state);
+
+    console.log(f);
+    return f.move;
+  }
+
+  return { minimax };
+})();
 
 const gameController = (function () {
   const playerOne = Player("X", "X");
