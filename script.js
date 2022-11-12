@@ -97,6 +97,7 @@ const displayController = (function () {
     if (gameController.isComputer()) {
       playerX.input.value = "Computer";
       playerX.input.disabled = true;
+      playerX.avatar.classList.add("computer");
       return modal.showModal();
     }
 
@@ -127,6 +128,7 @@ const displayController = (function () {
   }
 
   function showWinner(sequence) {
+    gameboard.classList.add("disabled");
     sequence.forEach((seqIndex, i) =>
       setTimeout(() => boxes[seqIndex].classList.add("winseq"), i * 500)
     );
@@ -154,11 +156,16 @@ const displayController = (function () {
 
   function initialize() {
     gameController.setTurn(1);
+    gameController.setAdversary("human");
     modalResult.close();
+    modalChoice.returnValue = "";
     modalChoice.showModal();
+    gameboard.classList.remove("disabled");
     playerX.input.disabled = false;
-    gameController.setPlayerOneName("");
-    gameController.setPlayerTwoName("");
+    playerX.avatar.classList.remove("computer");
+    gameController.setPlayerOneName("X");
+    gameController.setPlayerTwoName("O");
+    gameController.initPlayer();
     gameBoard.clearBoard();
     boxes.forEach((box) =>
       box.classList.contains("winseq") ? box.classList.remove("winseq") : null
@@ -166,7 +173,7 @@ const displayController = (function () {
     render();
   }
 
-  return { render, showWinner, showDraw };
+  return { render, showWinner, showDraw, highlight };
 })();
 
 const Player = (name, mark) => {
@@ -244,7 +251,6 @@ const computer = (function () {
     }
 
     const f = maxValue(state);
-
     return f.move;
   }
 
@@ -297,6 +303,10 @@ const gameController = (function () {
     return currentPlayer;
   }
 
+  function initPlayer() {
+    currentPlayer = playerOne;
+  }
+
   function getCurrentMark() {
     return currentPlayer.getMark();
   }
@@ -310,8 +320,9 @@ const gameController = (function () {
   }
 
   function initialMove() {
-    if (isComputer) {
-      gameBoard.setMove(playerOne.getMark(), Math.floor(Math.random() * 10));
+    if (isComputer()) {
+      const random = Math.floor(Math.random() * 10);
+      gameBoard.setMove(playerOne.getMark(), random);
       nextTurn();
     }
   }
@@ -342,6 +353,7 @@ const gameController = (function () {
     isComputer,
     isHuman,
     initialMove,
+    initPlayer,
     computerTurn,
   };
 })();

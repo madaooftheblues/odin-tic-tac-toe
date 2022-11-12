@@ -83,6 +83,14 @@ dialog {
   width: 10rem;
 }
 
+.computer {
+  content: url("./assets/icons/ComputerTwotone.svg");
+}
+
+.disabled {
+  pointer-events: none;
+}
+
 #btn-replay {
   background-color: var(--contrast);
 }
