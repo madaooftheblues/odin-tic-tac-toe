@@ -23,13 +23,10 @@ img {
   pointer-events: none;
 }
 
-#modal::backdrop,
-#modal-result::backdrop {
+dialog::backdrop {
   backdrop-filter: blur(0.5rem);
 }
-
-#modal,
-#modal-result {
+dialog {
   padding: 20px;
 }
 
@@ -72,6 +69,18 @@ img {
   border: 2px solid var(--font);
   font-weight: 600;
   cursor: pointer;
+}
+
+.btn:hover {
+  filter: brightness(90%);
+}
+
+.icon {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  overflow: hidden;
+  width: 10rem;
 }
 
 #btn-replay {

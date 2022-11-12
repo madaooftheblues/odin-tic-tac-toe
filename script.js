@@ -20,7 +20,6 @@ const gameBoard = (function () {
   function setMove(mark, index) {
     if (index >= moves.length) return;
     moves[index] = mark;
-    console.log(moves);
   }
 
   function getWinSeq() {
@@ -52,35 +51,68 @@ const gameBoard = (function () {
 
 const displayController = (function () {
   //cache DOM
+  const modalChoice = document.getElementById("modal-choice");
+
   const modal = document.getElementById("modal");
+
   const modalResult = document.getElementById("modal-result");
   const winner = modalResult.querySelector("#winner-announcement");
   const replayBtn = modalResult.querySelector("#btn-replay");
-  const playerXNameInput = modal.querySelector("#input-player-X");
-  const playerONameInput = modal.querySelector("#input-player-O");
-  const playerXName = document.getElementById("name-player-X");
-  const playerOName = document.getElementById("name-player-O");
-  const playerXAvatar = document.getElementById("avatar-player-X");
-  const playerOAvatar = document.getElementById("avatar-player-O");
+
   const gameboard = document.getElementById("gameboard");
   const boxes = Array.from(gameboard.getElementsByClassName("box"));
-
-  //tells the current turn
-  let turn = 1;
+  const playerX = {
+    name: document.getElementById("name-player-X"),
+    input: modal.querySelector("#input-player-X"),
+    avatar: document.getElementById("avatar-player-X"),
+  };
+  const playerO = {
+    name: document.getElementById("name-player-O"),
+    input: modal.querySelector("#input-player-O"),
+    avatar: document.getElementById("avatar-player-O"),
+  };
 
   //display modal
-  modal.showModal();
+  modalChoice.showModal();
   //bind events
+  modalChoice.addEventListener("close", selectChoice);
+
   gameboard.addEventListener("click", registerMove);
   modal.addEventListener("close", registerPlayers);
   replayBtn.addEventListener("click", initialize);
 
-  function registerPlayers() {
-    gameController.setPlayerOneName(playerXNameInput.value);
-    playerXName.innerText = gameController.getPlayeOneName();
+  function highlight() {
+    if (gameController.getCurrentMark() === "X") {
+      playerX.avatar.classList.add("selected");
+      playerO.avatar.classList.remove("selected");
+    } else {
+      playerX.avatar.classList.remove("selected");
+      playerO.avatar.classList.add("selected");
+    }
+  }
 
-    gameController.setPlayerTwoName(playerONameInput.value);
-    playerOName.innerText = gameController.getPlayerTwoName();
+  function selectChoice() {
+    gameController.setAdversary(modalChoice.returnValue);
+    if (gameController.isHuman()) return modal.showModal();
+    if (gameController.isComputer()) {
+      playerX.input.value = "Computer";
+      playerX.input.disabled = true;
+      return modal.showModal();
+    }
+
+    return modalChoice.showModal();
+  }
+
+  function registerPlayers() {
+    gameController.setPlayerOneName(playerX.input.value);
+    playerX.name.innerText = gameController.getPlayeOneName();
+
+    gameController.setPlayerTwoName(playerO.input.value);
+    playerO.name.innerText = gameController.getPlayerTwoName();
+
+    gameController.initialMove();
+    highlight();
+    render();
   }
 
   function isEmpty(element) {
@@ -104,38 +136,37 @@ const displayController = (function () {
 
   function showDraw() {
     winner.textContent = "Match Tied";
-    modalResult.showModal();
+    setTimeout(() => modalResult.showModal(), 1000);
   }
 
   function registerMove(e) {
     if (e.target === gameboard) return;
     if (!isEmpty(e.target)) return;
-    playerOAvatar.classList.toggle("selected");
-    playerXAvatar.classList.toggle("selected");
-    turn++;
+
     gameBoard.setMove(gameController.getCurrentMark(), boxes.indexOf(e.target));
     render();
     if (gameBoard.checkForWin()) return;
-    if (turn > 9) return showDraw();
+    if (gameController.getTurn() >= 9) return showDraw();
     gameController.nextTurn();
+    gameController.computerTurn();
+    highlight();
   }
 
   function initialize() {
-    turn = 1;
+    gameController.setTurn(1);
     modalResult.close();
-    modal.showModal();
+    modalChoice.showModal();
+    playerX.input.disabled = false;
     gameController.setPlayerOneName("");
     gameController.setPlayerTwoName("");
     gameBoard.clearBoard();
     boxes.forEach((box) =>
       box.classList.contains("winseq") ? box.classList.remove("winseq") : null
     );
-    playerXAvatar.classList.add("selected");
-    playerOAvatar.classList.remove("selected");
     render();
   }
 
-  return { render, showWinner };
+  return { render, showWinner, showDraw };
 })();
 
 const Player = (name, mark) => {
@@ -212,9 +243,8 @@ const computer = (function () {
       return { v, move };
     }
 
-    let f = maxValue(state);
+    const f = maxValue(state);
 
-    console.log(f);
     return f.move;
   }
 
@@ -224,7 +254,23 @@ const computer = (function () {
 const gameController = (function () {
   const playerOne = Player("X", "X");
   const playerTwo = Player("O", "O");
+  let adversary = "human";
   let currentPlayer = playerOne;
+  let turn = 1;
+
+  function setAdversary(str) {
+    adversary = str;
+  }
+
+  function isComputer() {
+    if (adversary === "computer") return true;
+    return false;
+  }
+
+  function isHuman() {
+    if (adversary === "human") return true;
+    return false;
+  }
 
   function setPlayerOneName(name) {
     playerOne.setName(name);
@@ -244,6 +290,7 @@ const gameController = (function () {
 
   function nextTurn() {
     currentPlayer = currentPlayer === playerOne ? playerTwo : playerOne;
+    turn++;
   }
 
   function getCurrentPlayer() {
@@ -254,6 +301,33 @@ const gameController = (function () {
     return currentPlayer.getMark();
   }
 
+  function getTurn() {
+    return turn;
+  }
+
+  function setTurn(n) {
+    turn = n;
+  }
+
+  function initialMove() {
+    if (isComputer) {
+      gameBoard.setMove(playerOne.getMark(), Math.floor(Math.random() * 10));
+      nextTurn();
+    }
+  }
+
+  function computerTurn() {
+    if (!isComputer()) return;
+    gameBoard.setMove(
+      getCurrentMark(),
+      computer.minimax(gameBoard.getState(), true)
+    );
+    displayController.render();
+    if (gameBoard.checkForWin()) return;
+    if (turn >= 9) return displayController.showDraw();
+    nextTurn();
+  }
+
   return {
     nextTurn,
     getCurrentPlayer,
@@ -262,5 +336,12 @@ const gameController = (function () {
     setPlayerTwoName,
     getPlayeOneName,
     getPlayerTwoName,
+    getTurn,
+    setTurn,
+    setAdversary,
+    isComputer,
+    isHuman,
+    initialMove,
+    computerTurn,
   };
 })();
