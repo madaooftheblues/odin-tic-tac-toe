@@ -61,6 +61,10 @@ const displayController = (function () {
 
   const gameboard = document.getElementById("gameboard");
   const boxes = Array.from(gameboard.getElementsByClassName("box"));
+
+  const audio = document.getElementById("audio");
+  audio.volume = 0.3;
+
   const playerX = {
     name: document.getElementById("name-player-X"),
     input: modal.querySelector("#input-player-X"),
@@ -128,6 +132,7 @@ const displayController = (function () {
   }
 
   function showWinner(sequence) {
+    audio.play();
     gameboard.classList.add("disabled");
     sequence.forEach((seqIndex, i) =>
       setTimeout(() => boxes[seqIndex].classList.add("winseq"), i * 500)
